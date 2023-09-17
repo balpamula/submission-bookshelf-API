@@ -69,9 +69,9 @@ const addBooks = (request, h) => {
 };
 
 const getAllBooks = (request, h) => {
-  const { name } = request.query;
+  const { name, reading, finished } = request.query;
 
-  if (!name) {
+  if (!name && reading === undefined && finished === undefined) {
     if (books.length === 0) {
       const response = h.response({
         status: 'success',
@@ -93,8 +93,22 @@ const getAllBooks = (request, h) => {
     return response;
   }
 
-  const filteredBooks = books.filter((book) => book.name.toLowerCase()
-    .includes(name.toLowerCase()));
+  let filteredBooks = [...books];
+
+  if (name) {
+    filteredBooks = filteredBooks.filter((book) => book.name.toLowerCase()
+      .includes(name.toLowerCase()));
+  }
+
+  if (reading === '0' || reading === '1') {
+    const isReading = reading === '1';
+    filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
+  }
+
+  if (finished === '0' || finished === '1') {
+    const isFinished = finished === '1';
+    filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
+  }
 
   if (filteredBooks.length === 0) {
     const response = h.response({
