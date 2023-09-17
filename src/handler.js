@@ -68,21 +68,51 @@ const addBooks = (request, h) => {
   return response;
 };
 
-const getAllBooks = () => {
-  if (books.length === 0) {
-    return {
+const getAllBooks = (request, h) => {
+  const { name } = request.query;
+
+  if (!name) {
+    if (books.length === 0) {
+      const response = h.response({
+        status: 'success',
+        data: {
+          books: [],
+        },
+      });
+      response.code(200);
+      return response;
+    }
+
+    const response = h.response({
       status: 'success',
       data: {
-        books: [],
+        books: books.map(({ id, name, publisher }) => ({ id, name, publisher })),
       },
-    };
+    });
+    response.code(200);
+    return response;
   }
-  return {
+
+  const filteredBooks = books.filter((book) => book.name.toLowerCase()
+    .includes(name.toLowerCase()));
+
+  if (filteredBooks.length === 0) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Buku tidak ditemukan',
+    });
+    response.code(404);
+    return response;
+  }
+
+  const response = h.response({
     status: 'success',
     data: {
-      books,
+      books: filteredBooks.map(({ id, name, publisher }) => ({ id, name, publisher })),
     },
-  };
+  });
+  response.code(200);
+  return response;
 };
 
 const getBookById = (request, h) => {
@@ -91,12 +121,14 @@ const getBookById = (request, h) => {
   const book = books.filter((n) => n.id === id)[0];
 
   if (book !== undefined) {
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         book,
       },
-    };
+    });
+    response.code(200);
+    return response;
   }
   const response = h.response({
     status: 'fail',
